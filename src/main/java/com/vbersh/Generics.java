@@ -40,7 +40,7 @@ public class Generics {
         List<Square> squares = new ArrayList<>();
         Square sq1 = new Square();
         squares.add(sq1);
-        g.draw2(squares); // cant use g.draw because it strictly takes a list of Shape
+        g.draw2(squares); // cant use g.draw because it strictly takes a list of Shape.
                           // to avoid writing a draw method for every subtype of Shape
                           // we declare a list of 'unknown(?) extends Shape'
                           // List<? extends Shape> is an example of a bounded wildcard
