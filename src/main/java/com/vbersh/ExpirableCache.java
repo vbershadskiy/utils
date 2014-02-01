@@ -8,6 +8,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
+/**
+ * http://www.javaspecialists.eu/archive/Issue125.html
+ * http://code.google.com/p/guava-libraries/wiki/CachesExplained
+ * http://code.google.com/p/concurrentlinkedhashmap/wiki/ExpirableCache
+ */
 public class ExpirableCache<K, V> {
 
     private static final int TIME_TO_LIVE = 15 * 60 * 1000;
