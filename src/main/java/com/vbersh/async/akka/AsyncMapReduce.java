@@ -32,8 +32,8 @@ public class AsyncMapReduce {
         ExecutionContext ec = ExecutionContexts.fromExecutorService(executor);
 
         List<Future<Long>> listOfFutureLongs = new ArrayList<>();
-        listOfFutureLongs.add(future(new NonBlockingGetLongCall(), ec));
-        listOfFutureLongs.add(future(new NonBlockingGetLongCall(), ec));
+        listOfFutureLongs.add(future(new BlockingGetLongCall(), ec));
+        listOfFutureLongs.add(future(new BlockingGetLongCall(), ec));
 
         _map(ec, listOfFutureLongs);
 
@@ -92,7 +92,7 @@ public class AsyncMapReduce {
         }
     }
 
-    public static class NonBlockingGetLongCall implements Callable<Long> {
+    public static class BlockingGetLongCall implements Callable<Long> {
         public Long call() throws InterruptedException {
             Thread.sleep(1000l);
             return 1000l;

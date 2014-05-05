@@ -44,26 +44,24 @@ public class AsyncQuery<T> {
 
         ExecutorService es = Executors.newFixedThreadPool(2);
 
-        try {
-            AsyncQuery<Person> query1 = new AsyncQuery<>(ds, es, "SELECT a.id from person a left join (select id from person) b on a.id=b.id");
-            AsyncQuery<Person> query2 = new AsyncQuery<>(ds, es, "SELECT a.name from person a left join (select id from person) b on a.id=b.id");
+        AsyncQuery<Person> query1 = new AsyncQuery<>(ds, es, "SELECT a.id from person a left join (select id from person) b on a.id=b.id");
+        AsyncQuery<Person> query2 = new AsyncQuery<>(ds, es, "SELECT a.name from person a left join (select id from person) b on a.id=b.id");
 
-            long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
-            Future<List<Person>> future1 = query1.getFuture(Person.class);
-            Future<List<Person>> future2 = query2.getFuture(Person.class);
+        Future<List<Person>> future1 = query1.getFuture(Person.class);
+        Future<List<Person>> future2 = query2.getFuture(Person.class);
 
-            List<Person> persons1 = Futures.get(future1);
-            List<Person> persons2 = Futures.get(future2);
+        List<Person> persons1 = Futures.get(future1);
+        List<Person> persons2 = Futures.get(future2);
 
-            long elapsed = System.currentTimeMillis() - start;
+        long elapsed = System.currentTimeMillis() - start;
 
-            System.out.println("elapsed: " + elapsed);
+        System.out.println("elapsed: " + elapsed);
 
-            System.out.println("persons1: "+Arrays.toString(persons1.toArray()));
-            System.out.println("persons2: "+Arrays.toString(persons2.toArray()));
-        } finally {
-            es.shutdown();
-        }
+        System.out.println("persons1: "+Arrays.toString(persons1.toArray()));
+        System.out.println("persons2: "+Arrays.toString(persons2.toArray()));
+
+        es.shutdown();
     }
 }
