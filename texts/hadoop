@@ -16,25 +16,30 @@ $ cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
 ssh localhost
 
 --hadoop start/restart
-$ /usr/local/hadoop/bin/start-all.sh
+/usr/local/hadoop/sbin/start-dfs.sh
 
 --hadoop stop
-$ /usr/local/hadoop/bin/stop-all.sh
+/usr/local/hadoop/sbin/stop-dfs.sh
+
+-- create dir
+hadoop fs -mkdir /user
+hadoop fs -mkdir /user/hduser
+hadoop fs -mkdir /user/hduser/gutenberg
 
 -- copy book to hdfs
-hadoop dfs -copyFromLocal /tmp/gutenberg /user/hduser/gutenberg
+hdfs dfs -copyFromLocal /tmp/gutenberg /user/hduser/gutenberg
 
 -- check contents of directory
-hadoop dfs -ls /user/hduser/gutenberg
+hdfs dfs -ls /user/hduser/gutenberg
 
 -- remove if exists already
 hadoop fs -rmr /user/hduser/gutenberg-output
 
 -- run example wordcount map reduce job
-hadoop jar /usr/local/hadoop/hadoop-examples-1.0.0.jar wordcount /user/hduser/gutenberg /user/hduser/gutenberg-output
+hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar wordcount /user/hduser/gutenberg/* /user/hduser/gutenberg-output
 
 -- check output was generated
-hadoop dfs -ls /user/hduser/gutenberg-output
+hdfs dfs -ls /user/hduser/gutenberg-output
 
 -- copy output to local directory
 hadoop fs -copyToLocal /user/hduser/gutenberg-output/part-r-00000 /home/hduser/projects
