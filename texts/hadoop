@@ -1,0 +1,67 @@
+http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/
+
+$ sudo addgroup hadoop
+$ sudo adduser --ingroup hadoop hduser
+
+-- ssh access
+$ su - hduser
+
+-- generate an SSH key for the hduser user
+$ ssh-keygen -t rsa -P ""
+
+-- enable SSH access to your local machine with this newly created key
+$ cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+
+-- test
+ssh localhost
+
+--hadoop start/restart
+$ /usr/local/hadoop/bin/start-all.sh
+
+--hadoop stop
+$ /usr/local/hadoop/bin/stop-all.sh
+
+-- copy book to hdfs
+hadoop dfs -copyFromLocal /tmp/gutenberg /user/hduser/gutenberg
+
+-- check contents of directory
+hadoop dfs -ls /user/hduser/gutenberg
+
+-- remove if exists already
+hadoop fs -rmr /user/hduser/gutenberg-output
+
+-- run example wordcount map reduce job
+hadoop jar /usr/local/hadoop/hadoop-examples-1.0.0.jar wordcount /user/hduser/gutenberg /user/hduser/gutenberg-output
+
+-- check output was generated
+hadoop dfs -ls /user/hduser/gutenberg-output
+
+-- copy output to local directory
+hadoop fs -copyToLocal /user/hduser/gutenberg-output/part-r-00000 /home/hduser/projects
+
+-- check hdfs webui 
+http://localhost:50070/ – web UI of the NameNode daemon
+http://localhost:50030/ – web UI of the JobTracker daemon
+http://localhost:50060/ – web UI of the TaskTracker daemon
+
+
+
+
+-- install hive
+hadoop fs -mkdir /user/hive/warehouse
+
+-- set read/write permission
+hadoop fs -chmod g+w /user/hive/warehouse
+
+-- start
+hive
+
+This version of the code has been tested with:
+ * Hadoop 1.2.1/0.22.0/0.23.x/2.2.0
+ * Avro 1.5.4
+ * Pig 0.9.1
+ * Hive 0.8.0
+ * HBase 0.90.4/0.94.15
+ * ZooKeeper 3.4.2
+ * Sqoop 1.4.0-incubating
+ * MRUnit 0.8.0-incubating
