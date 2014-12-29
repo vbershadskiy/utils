@@ -1,0 +1,31 @@
+http://www.rabbitmq.com/install-debian.html
+http://www.rabbitmq.com/configure.html#customise-general-unix-environment
+http://www.rabbitmq.com/management-cli.html
+
+1.
+Add the following line to your /etc/apt/sources.list:
+
+deb http://www.rabbitmq.com/debian/ testing main
+
+2.
+wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+sudo apt-key add rabbitmq-signing-key-public.asc
+
+3.
+apt-get update
+sudo apt-get install rabbitmq-server
+
+4.
+A rabbitmq user is created on the system.
+
+following are set by default
+export RABBITMQ_HOME=/
+export RABBITMQ_LOG_BASE=/var/log/rabbitmq
+
+The broker creates a user guest with password guest.
+
+5.
+rabbitmqctl stop to stop the server.
+rabbitmqctl status to check whether it is running.
+
+

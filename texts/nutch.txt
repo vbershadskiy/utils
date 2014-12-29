@@ -1,0 +1,44 @@
+http://wiki.apache.org/nutch/NutchTutorial
+http://wiki.apache.org/nutch/NutchHadoopTutorial
+
+
+download apache-nutch-1.9-src.tar.gz
+
+cd /usr/local/nutch
+ant clean runtime
+
+export NUTCH_HOME=/usr/local/nutch/runtime/local
+
+
+mkdir /nutch/runtime/local/urls
+echo "http://nutch.apache.org/" > seed.txt
+
+hadoop dfs -put urls urls
+hadoop dfs -ls
+
+vi /nutch/runtime/local/conf/regex-urlfilter.txt
+-- add: +^http://([a-z0-9\-A-Z]*\.)*nutch.apache.org/([a-z0-9\-A-Z]*\/)*
+
+vi nutch-site.xml
+
+<property>
+        <name>http.agent.name</name>
+        <value>nutch-crawler</value>
+        <description>nutch-crawler</description>
+</property>
+
+
+-- install solr
+solr-4.10.3.tgz
+export APACHE_SOLR_HOME="/usr/local/solr-4.10.3
+
+-- start solr
+java -jar start.jar
+
+*** need to run solr as root, need to run crawl as root?
+
+crawl /usr/local/nutch/runtime/local/urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 0
+
+search solr for 'nutch':
+http://localhost:8983/solr/select/?q=nutch&start=0&rows=10&indent=on
+

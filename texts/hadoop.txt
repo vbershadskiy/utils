@@ -1,4 +1,5 @@
 http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/
+http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SingleCluster.html
 
 $ sudo addgroup hadoop
 $ sudo adduser --ingroup hadoop hduser
@@ -33,7 +34,7 @@ hdfs dfs -copyFromLocal /tmp/gutenberg /user/hduser/gutenberg
 hdfs dfs -ls /user/hduser/gutenberg
 
 -- remove if exists already
-hadoop fs -rmr /user/hduser/gutenberg-output
+hadoop fs -rm -r /user/hduser/gutenberg-output
 
 -- run example wordcount map reduce job
 hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar wordcount /user/hduser/gutenberg/* /user/hduser/gutenberg-output
@@ -61,12 +62,12 @@ hadoop fs -chmod g+w /user/hive/warehouse
 -- start
 hive
 
-This version of the code has been tested with:
- * Hadoop 1.2.1/0.22.0/0.23.x/2.2.0
- * Avro 1.5.4
- * Pig 0.9.1
- * Hive 0.8.0
- * HBase 0.90.4/0.94.15
- * ZooKeeper 3.4.2
- * Sqoop 1.4.0-incubating
- * MRUnit 0.8.0-incubating
+
+
+
+export JAVA_HOME=/opt/obuildfactory/jdk-1.8.0-openjdk-x86_64
+export HADOOP_HOME=/usr/local/hadoop
+export HIVE_HOME="/usr/local/hive"
+
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HIVE_HOME/bin
+

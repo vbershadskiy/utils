@@ -10,6 +10,13 @@
 
     <dependencies>
 
+        <!-- queues -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+
         <!-- math -->
         <dependency>
             <groupId>org.apache.commons</groupId>
