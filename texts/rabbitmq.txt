@@ -25,7 +25,29 @@ export RABBITMQ_LOG_BASE=/var/log/rabbitmq
 The broker creates a user guest with password guest.
 
 5.
-rabbitmqctl stop to stop the server.
-rabbitmqctl status to check whether it is running.
+rabbitmqctl stop/status on the current  node.
 
+-- to stop or start the server
+sudo invoke-rc.d rabbitmq-server stop/start
 
+6.
+wget "http://hg.rabbitmq.com/rabbitmq-management/raw-file/rabbitmq_v3_4_2/bin/rabbitmqadmin"
+sudo mv rabbitmqadmin /usr/local/bin/rabbitmqadmin
+
+7.
+test
+
+-- compile
+mvn clean compile
+
+-- start a couple of workers
+mvn exec:java -Dexec.mainClass="com.vbersh.queues.task.Worker" -Dexec.args="Worker"
+
+-- queue a few messages
+mvn exec:java -Dexec.mainClass="com.vbersh.queues.task.NewTask" -Dexec.args="NewTask First message.";mvn exec:java -Dexec.mainClass="com.vbersh.queues.task.NewTask" -Dexec.args="NewTask Second message.";mvn exec:java -Dexec.mainClass="com.vbersh.queues.task.NewTask" -Dexec.args="NewTask Third message.";mvn exec:java -Dexec.mainClass="com.vbersh.queues.task.NewTask" -Dexec.args="NewTask Fourth message."
+
+or
+
+rabbitmqadmin publish exchange=amq.default routing_key=task_queue payload="hello, world"
+
+-- messages are executed round robin, half on one worker, half on the other
