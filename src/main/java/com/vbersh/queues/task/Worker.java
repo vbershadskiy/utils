@@ -32,6 +32,9 @@ public class Worker {
             String message = new String(delivery.getBody());
 
             System.out.println(" [x] Received '" + message + "'");
+
+            if(message.matches(".*\t.*")) System.out.println("tabbed");
+
             doWork(message);
             System.out.println(" [x] Done" );
 
