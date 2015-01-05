@@ -101,6 +101,12 @@ cp /usr/local/nutch/runtime/deploy/apache-nutch-1.9.job /usr/local/nutch/runtime
   <value>hdfs://latitude:9000</value>
 </property>
 
+<property>
+  <name>hadoop.tmp.dir</name>
+  <value>/app/hadoop/tmp</value>
+</property>
+
+
 -- if needed get out of safe mode
 hdfs dfsadmin -safemode leave
 
@@ -130,6 +136,47 @@ hdfs dfsadmin -safemode leave
 </property>
 
 9.
+-- add to yarn-site.xml
+
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce_shuffle</value>
+</property>
+
+<property>
+  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+  <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+
+<property>
+  <name>yarn.nodemanager.resource.cpu-vcores</name>
+  <value>2</value>
+</property>
+
+-- following memory settings determined above
+<property>
+  <name>yarn.nodemanager.resource.memory-mb</name>
+  <value>1920</value>
+</property>
+
+<property>
+  <name>yarn.scheduler.minimum-allocation-mb</name>
+  <value>640</value>
+</property>
+
+<property>
+  <name>yarn.scheduler.maximum-allocation-mb</name>
+  <value>1920</value>
+</property>
+
+-- bump this value until you don't run out of virtual memory
+<property>
+  <name>yarn.nodemanager.vmem-pmem-ratio</name>
+  <value>4.1</value>
+</property>
+
+
+10.
 -- add to mapred-site.xml
 
 <property>
@@ -200,11 +247,11 @@ hdfs dfsadmin -safemode leave
 </property>
 
 
-10.
+11.
 -- runs crawl on hdfs's /urls directory, picking up seed.txt, and creating crawldb this time on hdfs: /usr/local/nutch/filesystem/data/crawldb
 crawl /urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 1
 
-11.
+12.
 -- search solr for 'nutch':
 http://localhost:8983/solr/select/?q=nutch&start=0&rows=10&indent=on
 
