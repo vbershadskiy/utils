@@ -16,6 +16,9 @@ $ cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
 -- test
 ssh localhost
 
+-- download
+hadoop-2.6.0.tar.gz
+
 --hadoop start/restart
 /usr/local/hadoop/sbin/start-dfs.sh
 
