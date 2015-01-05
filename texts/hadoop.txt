@@ -33,6 +33,10 @@ hadoop fs -mkdir /user
 hadoop fs -mkdir /user/hduser
 hadoop fs -mkdir /user/hduser/gutenberg
 
+-- get book
+cd /tmp/gutenberg
+wget https://www.gutenberg.org/ebooks/35997.txt.utf-8
+
 -- copy book to hdfs
 hdfs dfs -copyFromLocal /tmp/gutenberg /user/hduser/gutenberg
 

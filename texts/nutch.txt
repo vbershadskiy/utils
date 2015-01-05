@@ -123,6 +123,7 @@ hdfs dfsadmin -safemode leave
   <value>false</value>
 </property>
 
+-- 1 for single node cluster
 <property>
   <name>dfs.replication</name>
   <value>1</value>
