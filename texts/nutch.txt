@@ -1,44 +1,209 @@
 http://wiki.apache.org/nutch/NutchTutorial
 http://wiki.apache.org/nutch/NutchHadoopTutorial
 
-
+1.
 download apache-nutch-1.9-src.tar.gz
 
 cd /usr/local/nutch
-ant clean runtime
 
 export NUTCH_HOME=/usr/local/nutch/runtime/local
-
 
 mkdir /nutch/runtime/local/urls
 echo "http://nutch.apache.org/" > seed.txt
 
-hadoop dfs -put urls urls
-hadoop dfs -ls
+hdfs dfs -copyFromLocal /usr/local/nutch/runtime/local/urls /
+hdfs dfs -ls /
 
 vi /nutch/runtime/local/conf/regex-urlfilter.txt
 -- add: +^http://([a-z0-9\-A-Z]*\.)*nutch.apache.org/([a-z0-9\-A-Z]*\/)*
 
-vi nutch-site.xml
+-- if nutch-site.xml is changed need to re-build with ant clean runtime
+vi /nutch/runtime/local/conf/nutch-site.xml
 
 <property>
         <name>http.agent.name</name>
         <value>nutch-crawler</value>
         <description>nutch-crawler</description>
 </property>
+<property>
+        <name>http.robots.agents</name>
+        <value>nutch-crawler</value>
+        <description>nutch-crawler</description>
+</property>
 
+2.
+ant clean runtime
 
+3.
 -- install solr
 solr-4.10.3.tgz
 export APACHE_SOLR_HOME="/usr/local/solr-4.10.3
 
 -- start solr
-java -jar start.jar
+cd solr/example
+sudo java -jar start.jar
 
-*** need to run solr as root, need to run crawl as root?
+-- test solr is running
+http://localhost:8983/solr/
 
-crawl /usr/local/nutch/runtime/local/urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 0
+*** need to run solr as root?
 
-search solr for 'nutch':
+-- runs crawl on local file system
+crawl /usr/local/nutch/runtime/local/urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 1
+
+4.
+-- enable yarn to use hadoop 2's map/reduce over hdfs in mapred-site.conf
+
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>
+
+5.
+-- run script to determine yarn's memory settings for one node
+wget http://public-repo-1.hortonworks.com/HDP/tools/2.1.1.0/hdp_manual_install_rpm_helper_files-2.1.1.385.tar.gz
+python hdp-configuration-utils.py -c 2 -m 3 -d 1 -k False
+
+Using cores=2 memory=3GB disks=1 hbase=False
+Profile: cores=2 memory=2048MB reserved=1GB usableMem=2GB disks=1
+Num Container=3
+Container Ram=640MB
+Used Ram=1GB
+Unused Ram=1GB
+
+yarn.scheduler.minimum-allocation-mb=640
+yarn.scheduler.maximum-allocation-mb=1920
+yarn.nodemanager.resource.memory-mb=1920
+mapreduce.map.memory.mb=640
+mapreduce.map.java.opts=-Xmx512m
+mapreduce.reduce.memory.mb=1280
+mapreduce.reduce.java.opts=-Xmx1024m
+yarn.app.mapreduce.am.resource.mb=640
+yarn.app.mapreduce.am.command-opts=-Xmx512m
+mapreduce.task.io.sort.mb=256
+
+-- these may not be needed
+tez.am.resource.memory.mb=1280
+tez.am.java.opts=-Xmx1024m
+hive.tez.container.size=640
+hive.tez.java.opts=-Xmx512m
+hive.auto.convert.join.noconditionaltask.size=134217000
+
+6.
+-- needed for crawl command to use hdfs
+cp /usr/local/nutch/runtime/deploy/apache-nutch-1.9.job /usr/local/nutch/runtime/local
+
+7.
+-- change hadoop core-site.xml localhost to actual host
+
+<property>
+  <name>fs.defaultFS</name>
+  <value>hdfs://latitude:9000</value>
+</property>
+
+-- if needed get out of safe mode
+hdfs dfsadmin -safemode leave
+
+8.
+
+-- add to hadoop hdfs-site.xml
+<property>
+  <name>dfs.namenode.name.dir</name>
+  <value>/usr/local/nutch/filesystem/name</value>
+</property>
+
+<property>
+  <name>dfs.datanode.data.dir</name>
+  <value>/usr/local/nutch/filesystem/data</value>
+</property>
+
+-- this one may not be needed
+<property>
+  <name>dfs.permissions.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>dfs.replication</name>
+  <value>1</value>
+</property>
+
+9.
+-- add to mapred-site.xml
+
+<property>
+  <name>mapreduce.jobtracker.address</name>
+  <value>latitude:9001</value>
+</property>
+
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>
+
+<property>
+  <name>mapreduce.job.maps</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>mapreduce.job.reduces</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>mapreduce.jobtracker.system.dir</name>
+  <value>/usr/local/nutch/filesystem/mapreduce/system</value>
+</property>
+
+<property>
+  <name>mapreduce.cluster.local.dir</name>
+  <value>/usr/local/nutch/filesystem/mapreduce/local</value>
+</property>
+
+
+-- following memory settings determined above
+<property>
+  <name>mapreduce.map.memory.mb</name>
+  <value>640</value>
+</property>
+
+<property>
+  <name>mapreduce.reduce.memory.mb</name>
+  <value>1280</value>
+</property>
+
+<property>
+  <name>mapreduce.map.java.opts</name>
+  <value>-Xmx512m</value>
+</property>
+
+<property>
+  <name>mapreduce.reduce.java.opts</name>
+  <value>-Xmx1024m</value>
+</property>
+
+<property>
+  <name>yarn.app.mapreduce.am.resource.mb</name>
+  <value>640</value>
+</property>
+
+<property>
+  <name>yarn.app.mapreduce.am.command-opts</name>
+  <value>-Xmx512m</value>
+</property>
+
+<property>
+  <name>mapreduce.task.io.sort.mb</name>
+  <value>256</value>
+</property>
+
+
+10.
+-- runs crawl on hdfs's /urls directory, picking up seed.txt, and creating crawldb this time on hdfs: /usr/local/nutch/filesystem/data/crawldb
+crawl /urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 1
+
+11.
+-- search solr for 'nutch':
 http://localhost:8983/solr/select/?q=nutch&start=0&rows=10&indent=on
 

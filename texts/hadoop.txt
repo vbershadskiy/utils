@@ -22,6 +22,12 @@ ssh localhost
 --hadoop stop
 /usr/local/hadoop/sbin/stop-dfs.sh
 
+--start yarn
+/usr/local/hadoop/sbin/start-yarn.sh
+
+--stop yarn
+/usr/local/hadoop/sbin/stop-yarn.sh
+
 -- create dir
 hadoop fs -mkdir /user
 hadoop fs -mkdir /user/hduser
