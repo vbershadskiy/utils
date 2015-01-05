@@ -1,5 +1,7 @@
 http://wiki.apache.org/nutch/NutchTutorial
 http://wiki.apache.org/nutch/NutchHadoopTutorial
+http://florianhartl.com/nutch-how-it-works.html
+http://florianhartl.com/nutch-plugin-tutorial.html
 
 1.
 download apache-nutch-1.9-src.tar.gz
