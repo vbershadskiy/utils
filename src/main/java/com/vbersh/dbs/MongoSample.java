@@ -1,11 +1,6 @@
 package com.vbersh.dbs;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import de.flapdoodle.embed.mongo.Command;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -34,6 +29,7 @@ import java.util.Map;
  * http://docs.mongodb.org/manual/reference/sql-comparison/
  * http://www.unityjdbc.com/mongojdbc/mongosqltranslate.php
  * http://docs.mongodb.org/manual/core/index-multikey/
+ * http://docs.mongodb.org/manual/core/aggregation-pipeline/
  *
  */
 public class MongoSample {
@@ -74,7 +70,7 @@ public class MongoSample {
 
             System.out.println(store.getCount());
 
-            testArrayIndex(store);
+            testArrayIndexWithAggregateMatch(store);
 
 /*            for (String number : numbers) {
                 Map<String, Object> data = new HashMap<>();
@@ -111,7 +107,7 @@ public class MongoSample {
         // db.digits.save({'names': ['one','two','three']})
         store.save(new BasicDBObject("names", Arrays.asList("one", "two", "three")));
 
-        // db.digits.find({'names': 'one','two'})
+        // db.digits.find({'names': ['one','two']})
         // matches the document that has exactly "one","two", no less, no more, and in order
         DBCursor cursor = store.find(new BasicDBObject("names", new String[]{"one", "two"}));
 
@@ -120,6 +116,32 @@ public class MongoSample {
             for(String key : o.keySet() ) {
                 System.out.println(o.get(key));
             }
+        }
+    }
+
+    private static void testArrayIndexWithAggregateMatch(DBCollection store) {
+        // db.digits.ensureIndex( { names: 1 } )
+        store.createIndex(new BasicDBObject("names", 1));
+
+        // db.digits.save({'names': ['one']})
+        store.save(new BasicDBObject("names", Arrays.asList("one")));
+
+        // db.digits.save({'names': ['one','two']})
+        store.save(new BasicDBObject("names", Arrays.asList("one", "two")));
+
+        // db.digits.save({'names': ['one','two','three']})
+        store.save(new BasicDBObject("names", Arrays.asList("one", "two", "three")));
+
+        // db.digits.find({'names': { $all: ['one','two'] }})
+        // matches the document that has "one","two", no less, but could be more, and out of order
+        BasicDBObject match = new BasicDBObject("$match",
+                new BasicDBObject("names",
+                        new BasicDBObject("$all", new String[]{"two", "one"}) ) );
+
+        AggregationOutput output = store.aggregate(Arrays.asList(match));
+
+        for (DBObject result : output.results()) {
+            System.out.println(result);
         }
     }
 

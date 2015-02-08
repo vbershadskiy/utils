@@ -1,7 +1,15 @@
+http://wiki.apache.org/nutch/OptimizingCrawls
 http://wiki.apache.org/nutch/NutchTutorial
 http://wiki.apache.org/nutch/NutchHadoopTutorial
 http://florianhartl.com/nutch-how-it-works.html
 http://florianhartl.com/nutch-plugin-tutorial.html
+
+http://dailyhadoopsoup.blogspot.com/2014/01/partitioning-in-mapreduce.html
+The mechanism sending specific key-value pairs to specific reducers is called partitioning. In Hadoop, the default partitioner is HashPartitioner, which hashes a record’s key to determine which partition (and thus which reducer) the record belongs in. The number of partitions is then equal to the number of reduce tasks for the job.
+
+nutch phases: Inject -> Generate -> Fetch -> Parse -> Update -> Index
+
+Generate: creates fetch list of urls. urls with the same host will fall under the same partition and end up being fetched on a single datanode.
 
 1.
 download apache-nutch-1.9-src.tar.gz
@@ -10,27 +18,21 @@ cd /usr/local/nutch
 
 export NUTCH_HOME=/usr/local/nutch/runtime/local
 
-mkdir /nutch/runtime/local/urls
-echo "http://nutch.apache.org/" > seed.txt
+mkdir /usr/local/nutch/urls
+echo "http://nutch.apache.org/" > urls/seed.txt
 
-hdfs dfs -copyFromLocal /usr/local/nutch/runtime/local/urls /
+hdfs dfs -copyFromLocal /usr/local/nutch/urls /
 hdfs dfs -ls /
 
-vi /nutch/runtime/local/conf/regex-urlfilter.txt
--- add: +^http://([a-z0-9\-A-Z]*\.)*nutch.apache.org/([a-z0-9\-A-Z]*\/)*
+vi /usr/local/nutch/conf/regex-urlfilter.txt
+-- add: +^http://([a-z0-9]*\.)*nutch.apache.org/
 
 -- if nutch-site.xml is changed need to re-build with ant clean runtime
-vi /nutch/runtime/local/conf/nutch-site.xml
+vi /usr/local/nutch/conf/nutch-site.xml
 
 <property>
-        <name>http.agent.name</name>
-        <value>nutch-crawler</value>
-        <description>nutch-crawler</description>
-</property>
-<property>
-        <name>http.robots.agents</name>
-        <value>nutch-crawler</value>
-        <description>nutch-crawler</description>
+  <name>http.agent.name</name>
+  <value>nutch-crawler</value>
 </property>
 
 2.
@@ -40,6 +42,24 @@ ant clean runtime
 -- install solr
 solr-4.10.3.tgz
 export APACHE_SOLR_HOME="/usr/local/solr-4.10.3
+
+-- configure
+
+cp ${NUTCH_HOME}/conf/schema-solr4.xml ${APACHE_SOLR_HOME}/example/solr/collection1/conf/schema.xml
+
+-- comment out:
+<!-- <filter class="solr.EnglishPorterFilterFactory" protected="protwords.txt"/> -->
+
+-- add:
+<field name="_version_" type="long" stored="true" indexed="true"/>
+
+-- modify ${APACHE_SOLR_HOME}/example/solr/collection1/conf/solrconfig.xml
+under:
+<requestHandler name="/select" class="solr.SearchHandler">
+change:
+<str name="df">text</str>
+to:
+<str name="df">content</str>
 
 -- start solr
 cd solr/example
@@ -250,6 +270,10 @@ hdfs dfsadmin -safemode leave
 
 
 11.
+-- remove existing data
+hadoop fs -rm -r /usr/local/nutch/filesystem/data
+curl -H "Content-Type: text/xml" --data-binary '<delete><query>*:*</query></delete>' http://localhost:8983/solr/collection1/update?commit=true
+
 -- runs crawl on hdfs's /urls directory, picking up seed.txt, and creating crawldb this time on hdfs: /usr/local/nutch/filesystem/data/crawldb
 crawl /urls /usr/local/nutch/filesystem/data http://localhost:8983/solr 1
 
