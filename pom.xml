@@ -10,6 +10,13 @@
 
     <dependencies>
 
+        <!-- html parser -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+
         <!-- hadoop / nutch -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
